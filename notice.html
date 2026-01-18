@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Content Access</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: none;
+        }
+        
+        .container.active {
+            display: block;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #4a00e0, #8e2de2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background-color: #e0e0e0;
+            z-index: 1;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+            position: relative;
+            width: 25%;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            color: #777;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-number {
+            background-color: #4a00e0;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .step.completed .step-number {
+            background-color: #00c851;
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.9rem;
+            color: #777;
+            text-align: center;
+        }
+        
+        .step.active .step-label {
+            color: #4a00e0;
+            font-weight: bold;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #4a00e0;
+            outline: none;
+        }
+        
+        .contact-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .contact-option {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .contact-option:hover {
+            border-color: #4a00e0;
+            background-color: #f9f5ff;
+        }
+        
+        .contact-option.selected {
+            border-color: #4a00e0;
+            background-color: #f0eaff;
+        }
+        
+        .contact-option i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #4a00e0;
+        }
+        
+        .payment-qr {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background-color: #f5f5f5;
+            margin: 0 auto 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #777;
+            font-style: italic;
+        }
+        
+        .upi-id {
+            background-color: #f0eaff;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4a00e0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .code-input-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        
+        .code-input {
+            width: 60px;
+            height: 70px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .code-input:focus {
+            border-color: #4a00e0;
+            outline: none;
+            transform: scale(1.05);
+        }
+        
+        .notices-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .notice {
+            background-color: #f9f9f9;
+            border-left: 5px solid #4a00e0;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .notice-date {
+            color: #777;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .notice-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .notice-content {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(to right, #4a00e0, #8e2de2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(106, 17, 203, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: #777;
+        }
+        
+        .btn-secondary:hover {
+            background: #666;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .success-message {
+            text-align: center;
+            padding: 30px;
+            background-color: #f0fff4;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #00c851;
+            font-weight: bold;
+        }
+        
+        .error-message {
+            text-align: center;
+            padding: 15px;
+            background-color: #fff0f0;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #ff4444;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .contact-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .code-input {
+                width: 50px;
+                height: 60px;
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container active" id="formContainer">
+        <div class="header">
+            <h1>Premium Access Portal</h1>
+            <p>Complete the steps below to access exclusive content</p>
+        </div>
+        
+        <div class="content">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">User Details</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Payment</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Verification</div>
+                </div>
+                <div class="step" id="step4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Content</div>
+                </div>
+            </div>
+            
+            <!-- Form Section 1: User Details -->
+            <div class="form-section active" id="userDetailsSection">
+                <h2 class="form-title">Enter Your Details</h2>
+                
+                <form id="userDetailsForm">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" class="form-control" placeholder="Enter your full name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" class="form-control" placeholder="Enter your age" min="13" max="100" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="occupation">Occupation</label>
+                        <input type="text" id="occupation" class="form-control" placeholder="e.g. Student, Engineer, Business Owner" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Select Contact Method</label>
+                        <div class="contact-options">
+                            <div class="contact-option" data-type="phone">
+                                <i class="fas fa-phone"></i>
+                                <div>Phone Number</div>
+                            </div>
+                            <div class="contact-option" data-type="email">
+                                <i class="fas fa-envelope"></i>
+                                <div>Email Address</div>
+                            </div>
+                            <div class="contact-option" data-type="instagram">
+                                <i class="fab fa-instagram"></i>
+                                <div>Instagram</div>
+                            </div>
+                            <div class="contact-option" data-type="telegram">
+                                <i class="fab fa-telegram"></i>
+                                <div>Telegram</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="contactFieldContainer">
+                        <!-- Contact field will be dynamically added here -->
+                    </div>
+                    
+                    <button type="button" class="btn" id="nextToPaymentBtn">Continue to Payment</button>
+                </form>
+            </div>
+            
+            <!-- Form Section 2: Payment -->
+            <div class="form-section" id="paymentSection">
+                <h2 class="form-title">Complete Payment</h2>
+                
+                <div class="payment-qr">
+                    <div class="qr-code">
+                        <!-- In a real implementation, you would place your QR code image here -->
+                        <div>Scan this QR with any UPI app</div>
+                    </div>
+                    
+                    <p>Scan the QR code above using any UPI app to complete the payment</p>
+                    
+                    <div class="upi-id" id="upiIdDisplay">
+                        <!-- UPI ID will be inserted here by JavaScript -->
+                    </div>
+                    
+                    <p>Amount: <strong>₹499</strong></p>
+                    <p>After payment, click the button below to continue</p>
+                </div>
+                
+                <div class="navigation">
+                    <button type="button" class="btn btn-secondary" id="backToDetailsBtn">Back</button>
+                    <button type="button" class="btn" id="nextToVerificationBtn">I Have Paid</button>
+                </div>
+            </div>
+            
+            <!-- Form Section 3: Verification -->
+            <div class="form-section" id="verificationSection">
+                <h2 class="form-title">Enter Access Code</h2>
+                
+                <p style="text-align: center; margin-bottom: 20px;">Enter the 6-digit code provided to you after payment confirmation</p>
+                
+                <div class="code-input-container">
+                    <input type="text" maxlength="1" class="code-input" id="code1">
+                    <input type="text" maxlength="1" class="code-input" id="code2">
+                    <input type="text" maxlength="1" class="code-input" id="code3">
+                    <input type="text" maxlength="1" class="code-input" id="code4">
+                    <input type="text" maxlength="1" class="code-input" id="code5">
+                    <input type="text" maxlength="1" class="code-input" id="code6">
+                </div>
+                
+                <div id="codeError" class="error-message hidden">Incorrect code. Please try again.</div>
+                
+                <div class="navigation">
+                    <button type="button" class="btn btn-secondary" id="backToPaymentBtn">Back</button>
+                    <button type="button" class="btn" id="verifyCodeBtn">Verify Code</button>
+                </div>
+            </div>
+            
+            <!-- Form Section 4: Content -->
+            <div class="form-section" id="contentSection">
+                <h2 class="form-title">Premium Content</h2>
+                
+                <div class="notices-container" id="noticesContainer">
+                    <!-- Notices will be loaded here -->
+                </div>
+                
+                <div class="navigation">
+                    <button type="button" class="btn btn-secondary" id="backToVerificationBtn">Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Current step tracking
+        let currentStep = 1;
+        let selectedContactType = '';
+        let userData = {};
+        
+        // IMPORTANT: Replace with your actual UPI ID
+        const UPI_ID = "yourname@upi"; // Change this to your actual UPI ID
+        
+        // IMPORTANT: Set your access code here
+        const ACCESS_CODE = "123456"; // Change this to your desired access code
+        
+        // Sample notices data
+        const sampleNotices = [
+            {
+                date: "2023-10-15",
+                title: "Important Announcement",
+                content: "All members are requested to attend the monthly review meeting scheduled for October 25th at 3 PM. Please come prepared with your progress reports."
+            },
+            {
+                date: "2023-10-10",
+                title: "New Feature Release",
+                content: "We're excited to announce the release of our new dashboard feature. This will provide you with better insights into your progress and performance metrics."
+            },
+            {
+                date: "2023-10-05",
+                title: "System Maintenance",
+                content: "There will be a scheduled system maintenance on October 12th from 2 AM to 6 AM. During this time, the platform may be unavailable. We apologize for any inconvenience."
+            },
+            {
+                date: "2023-09-28",
+                title: "Upcoming Webinar",
+                content: "Join us for an exclusive webinar on 'Advanced Strategies for Success' on November 5th. Limited seats available, so please register early."
+            },
+            {
+                date: "2023-09-20",
+                title: "Payment Process Update",
+                content: "Starting next month, we will be introducing a new payment processing system. This will result in faster transaction times and improved security."
+            }
+        ];
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display UPI ID
+            document.getElementById('upiIdDisplay').textContent = `UPI ID: ${UPI_ID}`;
+            
+            // Contact option selection
+            const contactOptions = document.querySelectorAll('.contact-option');
+            contactOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove selection from all options
+                    contactOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Add selection to clicked option
+                    this.classList.add('selected');
+                    
+                    // Set selected contact type
+                    selectedContactType = this.getAttribute('data-type');
+                    
+                    // Show appropriate contact field
+                    showContactField(selectedContactType);
+                });
+            });
+            
+            // Auto-select first contact option by default
+            if (contactOptions.length > 0) {
+                contactOptions[0].click();
+            }
+            
+            // Code input auto-focus
+            setupCodeInputs();
+            
+            // Button event listeners
+            document.getElementById('nextToPaymentBtn').addEventListener('click', nextToPayment);
+            document.getElementById('backToDetailsBtn').addEventListener('click', backToDetails);
+            document.getElementById('nextToVerificationBtn').addEventListener('click', nextToVerification);
+            document.getElementById('backToPaymentBtn').addEventListener('click', backToPayment);
+            document.getElementById('verifyCodeBtn').addEventListener('click', verifyCode);
+            document.getElementById('backToVerificationBtn').addEventListener('click', backToVerification);
+        });
+        
+        function showContactField(type) {
+            const container = document.getElementById('contactFieldContainer');
+            let html = '';
+            
+            switch(type) {
+                case 'phone':
+                    html = `
+                        <label for="contactValue">Phone Number</label>
+                        <input type="tel" id="contactValue" class="form-control" placeholder="Enter your phone number" required>
+                    `;
+                    break;
+                case 'email':
+                    html = `
+                        <label for="contactValue">Email Address</label>
+                        <input type="email" id="contactValue" class="form-control" placeholder="Enter your email address" required>
+                    `;
+                    break;
+                case 'instagram':
+                    html = `
+                        <label for="contactValue">Instagram Username</label>
+                        <input type="text" id="contactValue" class="form-control" placeholder="Enter your Instagram username (without @)" required>
+                    `;
+                    break;
+                case 'telegram':
+                    html = `
+                        <label for="contactValue">Telegram Username</label>
+                        <input type="text" id="contactValue" class="form-control" placeholder="Enter your Telegram username (without @)" required>
+                    `;
+                    break;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function nextToPayment() {
+            // Validate form
+            const name = document.getElementById('fullName').value.trim();
+            const age = document.getElementById('age').value.trim();
+            const occupation = document.getElementById('occupation').value.trim();
+            const contactValue = document.getElementById('contactValue').value.trim();
+            
+            if (!name || !age || !occupation || !contactValue) {
+                alert("Please fill in all fields before continuing.");
+                return;
+            }
+            
+            // Store user data
+            userData = {
+                name,
+                age,
+                occupation,
+                contactType: selectedContactType,
+                contactValue
+            };
+            
+            // In a real implementation, you would send this data to a server
+            console.log("User data collected:", userData);
+            
+            // Move to payment step
+            changeStep(2);
+        }
+        
+        function backToDetails() {
+            changeStep(1);
+        }
+        
+        function nextToVerification() {
+            // In a real implementation, you would verify payment here
+            // For this demo, we'll just proceed to the next step
+            changeStep(3);
+        }
+        
+        function backToPayment() {
+            changeStep(2);
+        }
+        
+        function verifyCode() {
+            // Get the entered code
+            const code1 = document.getElementById('code1').value;
+            const code2 = document.getElementById('code2').value;
+            const code3 = document.getElementById('code3').value;
+            const code4 = document.getElementById('code4').value;
+            const code5 = document.getElementById('code5').value;
+            const code6 = document.getElementById('code6').value;
+            
+            const enteredCode = code1 + code2 + code3 + code4 + code5 + code6;
+            
+            // Check if code is correct
+            if (enteredCode === ACCESS_CODE) {
+                // Code is correct - show content
+                loadNotices();
+                changeStep(4);
+            } else {
+                // Code is incorrect - show error
+                document.getElementById('codeError').classList.remove('hidden');
+                
+                // Clear inputs and focus on first one
+                clearCodeInputs();
+                document.getElementById('code1').focus();
+            }
+        }
+        
+        function backToVerification() {
+            changeStep(3);
+        }
+        
+        function changeStep(step) {
+            // Update step indicator
+            document.querySelectorAll('.step').forEach(s => {
+                s.classList.remove('active');
+            });
+            
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            // Mark previous steps as completed
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}`).classList.add('completed');
+            }
+            
+            // Hide all sections
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show current section
+            document.getElementById(getSectionIdForStep(step)).classList.add('active');
+            
+            // Update current step
+            currentStep = step;
+            
+            // Scroll to top of container
+            document.querySelector('.content').scrollTop = 0;
+        }
+        
+        function getSectionIdForStep(step) {
+            switch(step) {
+                case 1: return 'userDetailsSection';
+                case 2: return 'paymentSection';
+                case 3: return 'verificationSection';
+                case 4: return 'contentSection';
+                default: return 'userDetailsSection';
+            }
+        }
+        
+        function setupCodeInputs() {
+            const codeInputs = document.querySelectorAll('.code-input');
+            
+            codeInputs.forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    // Auto-focus next input
+                    if (this.value.length === 1 && index < codeInputs.length - 1) {
+                        codeInputs[index + 1].focus();
+                    }
+                    
+                    // Hide error message when user starts typing again
+                    document.getElementById('codeError').classList.add('hidden');
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    // Handle backspace
+                    if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+                        codeInputs[index - 1].focus();
+                    }
+                });
+            });
+        }
+        
+        function clearCodeInputs() {
+            document.querySelectorAll('.code-input').forEach(input => {
+                input.value = '';
+            });
+        }
+        
+        function loadNotices() {
+            const container = document.getElementById('noticesContainer');
+            container.innerHTML = '';
+            
+            sampleNotices.forEach(notice => {
+                const noticeElement = document.createElement('div');
+                noticeElement.className = 'notice';
+                noticeElement.innerHTML = `
+                    <div class="notice-date">${notice.date}</div>
+                    <div class="notice-title">${notice.title}</div>
+                    <div class="notice-content">${notice.content}</div>
+                `;
+                container.appendChild(noticeElement);
+            });
+        }
+        
+        // For demo purposes - simulate payment verification
+        // In a real implementation, you would check with your payment gateway
+        function simulatePaymentVerification() {
+            // This is where you would integrate with your payment gateway
+            // For now, we'll just return true after a delay
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(true);
+                }, 1500);
+            });
+        }
+    </script>
+</body>
+</html>
